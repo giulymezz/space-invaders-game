@@ -1,4 +1,4 @@
-#!/home/momo/Documenti/GitHub/space-invaders-game/venv/bin/python3
+#!/home/giuliamazzi/Documenti/gitHub/space-invaders-game/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
