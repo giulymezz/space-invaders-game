@@ -1,5 +1,7 @@
 import pygame
 import random
+import json
+import os
 
 # initialize Pygame
 pygame.init()
@@ -41,6 +43,29 @@ clock = pygame.time.Clock()
 # fonts
 font = pygame.font.Font(None, 36)
 font_large = pygame.font.Font(None, 74)
+
+# highscores
+HIGHSCORE_FILE = "highscores.json"
+
+def load_highscores():
+    # Load the ranking from the JSON file
+    if os.path.exists(HIGHSCORE_FILE):
+        with open(HIGHSCORE_FILE, "r") as file:
+            return json.load(file)
+    return []
+
+def save_highscores(scores):
+    # Save the ranking in the JSON file
+    with open(HIGHSCORE_FILE, "w") as file:
+        json.dump(scores, file)
+
+def update_highscores(new_score):
+    # Update the ranking with the new score
+    scores = load_highscores()
+    scores.append(new_score)
+    scores = sorted(scores, reverse=True)[:10]
+    save_highscores(scores)
+    return scores
 
 # player setup
 player_width = 50
@@ -244,17 +269,70 @@ while running:
             window.blit(master_health_text, (window_width - 250, 10))
 
         
-    elif game_over:
-        # draw "GAME OVER" message
-        font_large = pygame.font.Font(None, 74)
-        game_over_text = font_large.render("GAME OVER", True, red)
-        window.blit(game_over_text, (window_width // 2 - 150, window_height // 2 - 50))
+    if game_over:
+        update_highscores(score)  # Salva il punteggio
 
-    elif victory:
-        # draw "YOU WIN" message
-        font_large = pygame.font.Font(None, 74)
-        victory_text = font_large.render("YOU WIN!", True, green)
-        window.blit(victory_text, (window_width // 2 - 150, window_height // 2 - 50))
+        waiting = True  # Aspetta l'input del giocatore
+        while waiting:
+            window.fill((0, 0, 0))  # Sfondo nero
+
+            # Mostra GAME OVER
+            font_large = pygame.font.Font(None, 74)
+            end_text = font_large.render("GAME OVER", True, (255, 0, 0))
+            window.blit(end_text, (window_width // 2 - 150, window_height // 2 - 100))
+
+            # Mostra classifica
+            highscores = load_highscores()
+            font = pygame.font.Font(None, 36)
+            y_offset = window_height // 2 - 50
+            window.blit(font.render("HIGH SCORES:", True, (255, 255, 255)), (window_width // 2 - 100, y_offset))
+
+            for i, score in enumerate(highscores[:10]):
+                score_text = font.render(f"{i + 1}. {score}", True, (255, 255, 255))
+                window.blit(score_text, (window_width // 2 - 50, y_offset + (i + 1) * 30))
+
+            pygame.display.flip()
+
+            # Attende che il giocatore prema un tasto per uscire
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    waiting = False
+                    running = False
+                if event.type == pygame.KEYDOWN:  # Se il giocatore preme un tasto
+                    waiting = False  # Esce dal ciclo e chiude il gioco
+
+
+    if victory:  # Se il giocatore vince
+        update_highscores(score)  # Salva il punteggio
+
+        waiting = True  # Aspetta che il giocatore preme un tasto
+        while waiting:
+            window.fill((0, 0, 0))  # Sfondo nero
+
+            # Mostra la scritta "YOU WIN!"
+            font_large = pygame.font.Font(None, 74)
+            win_text = font_large.render("YOU WIN!", True, (0, 255, 0))
+            window.blit(win_text, (window_width // 2 - 120, window_height // 2 - 100))
+
+            # Mostra la classifica
+            highscores = load_highscores()
+            font = pygame.font.Font(None, 36)
+            y_offset = window_height // 2 - 50
+            window.blit(font.render("HIGH SCORES:", True, (255, 255, 255)), (window_width // 2 - 100, y_offset))
+
+            for i, score in enumerate(highscores[:10]):  # Mostra i primi 10 punteggi
+                score_text = font.render(f"{i + 1}. {score}", True, (255, 255, 255))
+                window.blit(score_text, (window_width // 2 - 50, y_offset + (i + 1) * 30))
+
+            pygame.display.flip()
+
+            # Attende che il giocatore prema un tasto per uscire
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    waiting = False
+                    running = False
+                if event.type == pygame.KEYDOWN:  # Se preme un tasto, esce
+                    waiting = False
 
     # update screen
     pygame.display.flip()
