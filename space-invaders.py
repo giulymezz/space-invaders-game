@@ -1,9 +1,9 @@
-import sys
 import pygame
 import random
 import json
 import os
 import time
+import sys
 
 # initialize Pygame
 pygame.init()
@@ -120,7 +120,11 @@ def show_menu():
     menu_active = True
     while menu_active:
         window.fill(black)
-        draw_button("SPACE INVADERS", window_width // 2 - 200, 200, 400, 60, blue, green)
+        
+        text_surface = font_large.render("SPACE INVADERS", True, blue)
+        text_rect = text_surface.get_rect(center=(window_width // 2, 200))
+        window.blit(text_surface, text_rect)
+
         start_game = draw_button("Start", window_width // 2 - 100, 400, 200, 50, red, green)
         show_scores = draw_button("Classifica", window_width // 2 - 100, 470, 200, 50, red, green)
         exit_game = draw_button("Esci", window_width // 2 - 100, 540, 200, 50, red, green)
