@@ -147,15 +147,35 @@ def show_menu():
 def show_highscores():
     highscores = load_highscores()
     showing_scores = True
+
     while showing_scores:
         window.fill(black)
-        font_large = pygame.font.Font(None, 74)
-        draw_button("HIGH SCORES", window_width // 2 - 150, 100, 300, 60, blue, green)
+
+        font_large = pygame.font.Font(None, 50)
+        text_surface = font_large.render("HIGH SCORES", True, blue)
+        text_rect = text_surface.get_rect(center=(window_width // 2, 150))
+        window.blit(text_surface, text_rect)
         
+        # Dimensioni e posizione del rettangolo della classifica
+        rect_width = 400
+        rect_height = min(500, 50 * len(highscores))
+        rect_x = window_width // 2 - rect_width // 2
+        rect_y = 200
+        
+        # Disegna il rettangolo di sfondo
+        pygame.draw.rect(window, white, (rect_x, rect_y, rect_width, rect_height))
+        
+        # Disegna i punteggi all'interno del rettangolo
+        font_small = pygame.font.Font(None, 40)
         for i, score in enumerate(highscores[:10]):
-            draw_button(f"{i + 1}. {score}", window_width // 2 - 100, 200 + i * 50, 200, 40, red, green)
+            text_surface = font_small.render(f"{i + 1}. {score}", True, black)
+            text_x = rect_x + 20  # Margine sinistro
+            text_y = rect_y + 10 + i * 50  # Spaziatura verticale
+            window.blit(text_surface, (text_x, text_y))
         
+        # Pulsante Indietro
         back_button = draw_button("Indietro", window_width // 2 - 100, 700, 200, 50, red, green)
+        
         pygame.display.flip()
         
         for event in pygame.event.get():
