@@ -1,71 +1,47 @@
+import sys
 import pygame
 import random
 import json
 import os
+import time
 
 # initialize Pygame
 pygame.init()
+pygame.font.init()
 
-# images
-background_img = pygame.image.load("media/spacewallpaper.png")
-background_img = pygame.transform.scale(background_img, (1500, 900))
-
-spaceship_img = pygame.image.load("media/spaceship.png")
-spaceship_img = pygame.transform.scale(spaceship_img, (60, 60))
-
-alien_img = pygame.image.load("media/alien.png")
-alien_img = pygame.transform.scale(alien_img, (40, 40))
-
-master_img = pygame.image.load("media/master.png")
-master_img = pygame.transform.scale(master_img, (150, 150))
-
-bullet_img = pygame.image.load("media/bullet.png")
-bullet_img = pygame.transform.scale(bullet_img, (20, 20))
-
-master_bullet_img = pygame.image.load("media/masterbullet.png")
-master_bullet_img = pygame.transform.scale(master_bullet_img, (20, 30))
-
-# set up the window
+# window setup
 window_width = 1500
 window_height = 900
 window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("Space Invaders")
 
-# set up the color
+# colors setup
 black = (0, 0, 0)
 white = (255, 255, 255)
 red = (255, 0, 0)
 green = (0, 255, 0)
+blue = (0, 0, 255)
 
-# set up the clock
+# clock setup
 clock = pygame.time.Clock()
 
-# fonts
-font = pygame.font.Font(None, 36)
-font_large = pygame.font.Font(None, 74)
+def load_image(path, size=None):
+    try:
+        img = pygame.image.load(path)
+        if size:
+            img = pygame.transform.scale(img, size)
+        return img
+    except pygame.error as e:
+        print(f"Errore nel caricamento dell'immagine {path}: {e}")
+        return None
 
-# highscores
-HIGHSCORE_FILE = "highscores.json"
-
-def load_highscores():
-    # Load the ranking from the JSON file
-    if os.path.exists(HIGHSCORE_FILE):
-        with open(HIGHSCORE_FILE, "r") as file:
-            return json.load(file)
-    return []
-
-def save_highscores(scores):
-    # Save the ranking in the JSON file
-    with open(HIGHSCORE_FILE, "w") as file:
-        json.dump(scores, file)
-
-def update_highscores(new_score):
-    # Update the ranking with the new score
-    scores = load_highscores()
-    scores.append(new_score)
-    scores = sorted(scores, reverse=True)[:10]
-    save_highscores(scores)
-    return scores
+# images
+background_img = load_image("media/spacewallpaper.png", (1500, 900))
+spaceship_img = load_image("media/spaceship.png", (60, 60))
+alien_img = load_image("media/alien.png", (40, 40))
+master_img = load_image("media/master.png", (150, 150))
+bullet_img = load_image("media/bullet.png", (20, 20))
+master_bullet_img = load_image("media/masterbullet.png", (20, 30))
 
 # player setup
 player_width = 50
@@ -87,12 +63,107 @@ master_bullet_speed = 5
 running = True
 game_over = False
 victory = False
+score = 0
 round_number = 1
 max_rounds = 5
 
-# score
-score = 0 
+# fonts
 font = pygame.font.Font(None, 36)
+font_large = pygame.font.Font(None, 74)
+
+# highscores
+HIGHSCORE_FILE = "highscores.json"
+
+def load_highscores():
+    # load the ranking from the JSON file
+    if os.path.exists(HIGHSCORE_FILE):
+        with open(HIGHSCORE_FILE, "r") as file:
+            return json.load(file)
+    return []
+
+def save_highscores(scores):
+    # save the ranking in the JSON file
+    with open(HIGHSCORE_FILE, "w") as file:
+        json.dump(scores, file)
+
+def update_highscores(new_score):
+    # update the ranking with the new score
+    scores = load_highscores()
+    scores.append(new_score)
+    scores = sorted(scores, reverse=True)[:10]
+    save_highscores(scores)
+    return scores
+
+last_click_time = 0  # Evita più click consecutivi
+
+# Pulsanti menu
+def draw_button(text, x, y, width, height, color, hover_color):
+    global last_click_time
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    current_time = time.time()
+    
+    if x < mouse[0] < x + width and y < mouse[1] < y + height:
+        pygame.draw.rect(window, hover_color, (x, y, width, height))
+        if click[0] == 1 and (current_time - last_click_time) > 0.3:
+            last_click_time = current_time
+            return True
+    else:
+        pygame.draw.rect(window, color, (x, y, width, height))
+    
+    text_surface = font.render(text, True, white)
+    text_rect = text_surface.get_rect(center=(x + width // 2, y + height // 2))
+    window.blit(text_surface, text_rect)
+    return False
+
+def show_menu():
+    menu_active = True
+    while menu_active:
+        window.fill(black)
+        draw_button("SPACE INVADERS", window_width // 2 - 200, 200, 400, 60, blue, green)
+        start_game = draw_button("Start", window_width // 2 - 100, 400, 200, 50, red, green)
+        show_scores = draw_button("Classifica", window_width // 2 - 100, 470, 200, 50, red, green)
+        exit_game = draw_button("Esci", window_width // 2 - 100, 540, 200, 50, red, green)
+        
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        
+        if start_game:
+            menu_active = False  # Avvia il gioco
+        elif show_scores:
+            show_highscores()
+        elif exit_game:
+            pygame.quit()
+            exit()
+
+def show_highscores():
+    highscores = load_highscores()
+    showing_scores = True
+    while showing_scores:
+        window.fill(black)
+        font_large = pygame.font.Font(None, 74)
+        draw_button("HIGH SCORES", window_width // 2 - 150, 100, 300, 60, blue, green)
+        
+        for i, score in enumerate(highscores[:10]):
+            draw_button(f"{i + 1}. {score}", window_width // 2 - 100, 200 + i * 50, 200, 40, red, green)
+        
+        back_button = draw_button("Indietro", window_width // 2 - 100, 700, 200, 50, red, green)
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        
+        if back_button:
+            showing_scores = False
+
+# Mostra il menu all'avvio
+show_menu()
 
 # master
 master = None
@@ -121,6 +192,7 @@ while running:
 
     # draw background
     window.blit(background_img, (0, 0))
+    window.blit(spaceship_img, (player_x, player_y))
 
     # handle events
     for event in pygame.event.get():
@@ -340,3 +412,4 @@ while running:
 
 # quit the game
 pygame.quit()
+sys.exit()
