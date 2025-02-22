@@ -94,7 +94,7 @@ def update_highscores(new_score):
     save_highscores(scores)
     return scores
 
-last_click_time = 0  # Evita più click consecutivi
+last_click_time = 0 
 
 # Pulsanti menu
 def draw_button(text, x, y, width, height, color, hover_color):
@@ -125,7 +125,7 @@ def show_menu():
         text_rect = text_surface.get_rect(center=(window_width // 2, 200))
         window.blit(text_surface, text_rect)
 
-        start_game = draw_button("Start", window_width // 2 - 100, 400, 200, 50, red, green)
+        start_game = draw_button("Inizia", window_width // 2 - 100, 400, 200, 50, red, green)
         show_scores = draw_button("Classifica", window_width // 2 - 100, 470, 200, 50, red, green)
         exit_game = draw_button("Esci", window_width // 2 - 100, 540, 200, 50, red, green)
         
@@ -137,7 +137,7 @@ def show_menu():
                 exit()
         
         if start_game:
-            menu_active = False  # Avvia il gioco
+            menu_active = False
         elif show_scores:
             show_highscores()
         elif exit_game:
@@ -169,12 +169,12 @@ def show_highscores():
         font_small = pygame.font.Font(None, 40)
         for i, score in enumerate(highscores[:10]):
             text_surface = font_small.render(f"{i + 1}. {score}", True, black)
-            text_x = rect_x + 20  # Margine sinistro
-            text_y = rect_y + 10 + i * 50  # Spaziatura verticale
+            text_x = rect_x + 20 
+            text_y = rect_y + 10 + i * 50 
             window.blit(text_surface, (text_x, text_y))
         
         # Pulsante Indietro
-        back_button = draw_button("Indietro", window_width // 2 - 100, 700, 200, 50, red, green)
+        back_button = draw_button("Indietro", window_width // 2 - 100, 750, 200, 50, red, green)
         
         pygame.display.flip()
         
