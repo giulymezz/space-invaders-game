@@ -215,6 +215,19 @@ while running:
         if master:
             window.blit(master_img, (master["x"], master["y"]))
 
+            # master life bar
+            bar_width = 150 
+            bar_height = 10 
+            bar_x = master["x"] 
+            bar_y = master["y"] - 20 
+
+            health_percentage = master_health / 20
+            current_bar_width = int(bar_width * health_percentage)
+
+            pygame.draw.rect(window, white, (bar_x, bar_y, bar_width, bar_height))
+            pygame.draw.rect(window, red, (bar_x, bar_y, current_bar_width, bar_height))
+
+
         # draw master bullets
         for bullet in master_bullets:
             window.blit(master_bullet_img, (bullet["x"], bullet["y"]))
